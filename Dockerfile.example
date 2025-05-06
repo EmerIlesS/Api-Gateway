@@ -1,0 +1,21 @@
+FROM node:18-alpine
+
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+# Variables de entorno de ejemplo (en producción, usar ARG o variables de entorno del sistema)
+ENV PORT=4000
+ENV AUTH_SERVICE_URL=http://auth-service:4001/graphql
+ENV PRODUCTS_SERVICE_URL=http://products-service:4002/graphql
+ENV NODE_ENV=production
+
+RUN npm run build
+
+EXPOSE 4000
+
+CMD ["npm", "start"]
