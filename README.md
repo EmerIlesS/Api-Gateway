@@ -89,7 +89,32 @@ Este endpoint maneja todas las operaciones de la API, incluyendo:
 
 El API Gateway utiliza Apollo Gateway para integrar los esquemas GraphQL de los microservicios en un único esquema unificado. Esto permite a los clientes realizar consultas que pueden abarcar múltiples servicios de forma transparente.
 
-La comunicación entre el Gateway y los microservicios se realiza a través de HTTP, utilizando los endpoints GraphQL de cada servicio.
+### Federación de Esquemas GraphQL
+
+La federación de esquemas GraphQL es una característica clave de este gateway que permite:
+
+1. **Esquema Unificado**: Combina los esquemas de múltiples servicios en un único esquema coherente.
+2. **Resolución Distribuida**: Las consultas que abarcan múltiples servicios son divididas y enrutadas adecuadamente.
+3. **Referencias entre Servicios**: Los tipos pueden hacer referencia a entidades definidas en otros servicios.
+
+### Comunicación entre Servicios
+
+La comunicación entre el Gateway y los microservicios se realiza a través de HTTP, utilizando los endpoints GraphQL de cada servicio:
+
+- **ms-auth-java**: Gestiona la autenticación, usuarios y favoritos en `http://localhost:4001/graphql`
+- **ms-products-orders**: Gestiona productos, categorías y órdenes en `http://localhost:4002/graphql`
+
+### Flujo de Datos
+
+1. El cliente envía una consulta GraphQL al Gateway (`http://localhost:4000/graphql`)
+2. El Gateway analiza la consulta y determina qué partes corresponden a cada servicio
+3. El Gateway envía subconsultas a los servicios correspondientes
+4. Los servicios procesan sus subconsultas y devuelven resultados
+5. El Gateway combina los resultados y los devuelve al cliente como una respuesta unificada
+
+### Autenticación entre Servicios
+
+El token JWT generado por el servicio de autenticación es pasado a través del Gateway a los demás servicios, permitiendo la validación de permisos en cada microservicio.
 
 ## Autenticación
 
