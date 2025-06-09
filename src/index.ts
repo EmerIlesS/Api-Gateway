@@ -33,7 +33,7 @@ app.post('/graphql', async (req, res) => {
     
     // Utilizar expresiones regulares para una detección más precisa
     const isAuthOperation = /\b(login|register|registerAdmin|registerVendor|token|me|password|addToFavorites|removeFromFavorites)\b/.test(operation);
-    const isProductOperation = /\b(Product|Order|Category|categories|products|createCategory|createProduct|updateProduct|deleteProduct)\b/.test(operation);
+    const isProductOperation = /\b(Product|product|Order|Category|categories|products|createCategory|createProduct|updateProduct|deleteProduct|createOrder|updateOrder|cancelOrder|orders)\b/.test(operation);
     
     if (isAuthOperation && !isProductOperation) {
       targetUrl = authServiceUrl;
