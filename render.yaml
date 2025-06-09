@@ -1,0 +1,63 @@
+services:
+  # Servicio de API Gateway
+  - type: web
+    name: gateway-service
+    runtime: docker
+    plan: starter
+    region: ohio    branch: main
+    envVars:
+      - key: PORT
+        value: 4000
+      - key: NODE_ENV
+        value: production
+      - key: AUTH_SERVICE_URL
+        value: https://ms-auth-java-service.onrender.com/graphql
+      - key: PRODUCTS_SERVICE_URL
+        value: https://ms-products-orders-service.onrender.com/graphql
+    buildCommand: npm install && npm run build    startCommand: npm start
+    name: ms-products-orders
+    runtime: docker
+    plan: starter
+    region: ohio
+    branch: main
+    envVars:
+      - key: SERVER_PORT
+        value: 4002
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: postgres
+          property: connectionString
+      - key: DB_HOST
+        fromDatabase:
+          name: postgres
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: postgres
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: postgres
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: postgres
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: postgres
+          property: password
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+
+  # Base de datos PostgreSQL
+databases:
+  - name: postgres
+    plan: starter
+    region: ohio
+    databaseName: ecommerce
+    ipAllowList: []  # Acceso desde cualquier IP
