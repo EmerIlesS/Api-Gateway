@@ -14,6 +14,7 @@
     "@apollo/gateway": "^2.10.2",
     "@apollo/server": "^4.12.0",
     "@apollo/subgraph": "^2.5.4",
+    "@apollo/datasource-rest": "^6.3.0",
     "@graphql-tools/delegate": "^10.2.17",
     "@graphql-tools/schema": "^10.0.23",
     "@graphql-tools/stitch": "^9.4.22",
