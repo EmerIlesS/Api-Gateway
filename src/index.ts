@@ -83,19 +83,39 @@ const typeDefs = `
     name: String!
     description: String!
     price: Float!
+    originalPrice: Float
+    discount: Int
+    image: String!
+    images: [String!]!
+    category: String!
+    categoryId: ID!
     stock: Int!
-    mainImageUrl: String!
-    imageUrls: [String!]!
-    category: Category!
+    rating: Float
+    reviews: Int
+    featured: Boolean
+    active: Boolean
     createdAt: String
     updatedAt: String
+  }
+
+  type ProductsResponse {
+    products: [Product!]!
+    total: Int!
+    page: Int!
+    totalPages: Int!
+    hasMore: Boolean!
   }
 
   type Category {
     id: ID!
     name: String!
     description: String!
-    products: [Product!]!
+    icon: String
+    image: String
+    productsCount: Int!
+    active: Boolean!
+    createdAt: String
+    updatedAt: String
   }
 
   type Order {
@@ -122,24 +142,49 @@ const typeDefs = `
     cancelled
   }
 
+  enum SortOrder {
+    ASC
+    DESC
+  }
+
+  input ProductFiltersInput {
+    category: String
+    categoryId: ID
+    search: String
+    minPrice: Float
+    maxPrice: Float
+    featured: Boolean
+    active: Boolean
+    inStock: Boolean
+    page: Int = 1
+    limit: Int = 10
+    sortBy: String = "createdAt"
+    sortOrder: SortOrder = DESC
+  }
+
   input CreateProductInput {
     name: String!
     description: String!
     price: Float!
-    stock: Int!
-    mainImageUrl: String!
-    imageUrls: [String!]!
+    originalPrice: Float
+    image: String!
+    images: [String!]
     categoryId: ID!
+    stock: Int!
+    featured: Boolean = false
   }
 
   input UpdateProductInput {
     name: String
     description: String
     price: Float
-    stock: Int
-    mainImageUrl: String
-    imageUrls: [String!]
+    originalPrice: Float
+    image: String
+    images: [String!]
     categoryId: ID
+    stock: Int
+    featured: Boolean
+    active: Boolean
   }
 
   input CreateCategoryInput {
@@ -161,8 +206,9 @@ const typeDefs = `
     me: UserProfile
     
     # Products queries
-    products: [Product!]!
+    products(filters: ProductFiltersInput): ProductsResponse!
     product(id: ID!): Product
+    featuredProducts(limit: Int = 8): [Product!]!
     categories: [Category!]!
     category(id: ID!): Category
     
@@ -208,11 +254,11 @@ const resolvers = {
     },
 
     // Products queries
-    products: async () => {
+    products: async (_: any, { filters }: { filters?: any }) => {
       const result = await forwardToService(
         productsServiceUrl,
-        'query { products { id name description price stock mainImageUrl imageUrls category { id name description } createdAt updatedAt } }',
-        {},
+        'query($filters: ProductFiltersInput) { products(filters: $filters) { products { id name description price originalPrice discount image images category categoryId stock rating reviews featured active createdAt updatedAt } total page totalPages hasMore } }',
+        { filters },
         {}
       );
       return result.data?.products;
@@ -221,17 +267,27 @@ const resolvers = {
     product: async (_: any, { id }: { id: string }) => {
       const result = await forwardToService(
         productsServiceUrl,
-        'query($id: ID!) { product(id: $id) { id name description price stock mainImageUrl imageUrls category { id name description } createdAt updatedAt } }',
+        'query($id: ID!) { product(id: $id) { id name description price originalPrice discount image images category categoryId stock rating reviews featured active createdAt updatedAt } }',
         { id },
         {}
       );
       return result.data?.product;
     },
 
+    featuredProducts: async (_: any, { limit }: { limit?: number }) => {
+      const result = await forwardToService(
+        productsServiceUrl,
+        'query($limit: Int) { featuredProducts(limit: $limit) { id name description price originalPrice discount image images category categoryId stock rating reviews featured active createdAt updatedAt } }',
+        { limit },
+        {}
+      );
+      return result.data?.featuredProducts;
+    },
+
     categories: async () => {
       const result = await forwardToService(
         productsServiceUrl,
-        'query { categories { id name description products { id name description price stock mainImageUrl imageUrls createdAt updatedAt } } }',
+        'query { categories { id name description icon image productsCount active createdAt updatedAt } }',
         {},
         {}
       );
@@ -241,7 +297,7 @@ const resolvers = {
     category: async (_: any, { id }: { id: string }) => {
       const result = await forwardToService(
         productsServiceUrl,
-        'query($id: ID!) { category(id: $id) { id name description products { id name description price stock mainImageUrl imageUrls createdAt updatedAt } } }',
+        'query($id: ID!) { category(id: $id) { id name description icon image productsCount active createdAt updatedAt } }',
         { id },
         {}
       );
@@ -335,7 +391,7 @@ const resolvers = {
     createProduct: async (_: any, { input }: any, context: any) => {
       const result = await forwardToService(
         productsServiceUrl,
-        'mutation($input: CreateProductInput!) { createProduct(input: $input) { id name description price stock mainImageUrl imageUrls category { id name description } createdAt updatedAt } }',
+        'mutation($input: CreateProductInput!) { createProduct(input: $input) { id name description price originalPrice discount image images category categoryId stock rating reviews featured active createdAt updatedAt } }',
         { input },
         context.headers
       );
@@ -345,7 +401,7 @@ const resolvers = {
     updateProduct: async (_: any, { id, input }: any, context: any) => {
       const result = await forwardToService(
         productsServiceUrl,
-        'mutation($id: ID!, $input: UpdateProductInput!) { updateProduct(id: $id, input: $input) { id name description price stock mainImageUrl imageUrls category { id name description } createdAt updatedAt } }',
+        'mutation($id: ID!, $input: UpdateProductInput!) { updateProduct(id: $id, input: $input) { id name description price originalPrice discount image images category categoryId stock rating reviews featured active createdAt updatedAt } }',
         { id, input },
         context.headers
       );
@@ -365,7 +421,7 @@ const resolvers = {
     createCategory: async (_: any, { input }: any, context: any) => {
       const result = await forwardToService(
         productsServiceUrl,
-        'mutation($input: CreateCategoryInput!) { createCategory(input: $input) { id name description products { id name description price stock mainImageUrl imageUrls createdAt updatedAt } } }',
+        'mutation($input: CreateCategoryInput!) { createCategory(input: $input) { id name description icon image productsCount active createdAt updatedAt } }',
         { input },
         context.headers
       );
